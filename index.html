@@ -184,13 +184,16 @@ Please complete the verification process to activate your badge.`;
       });
     }
 
-    (async function main() {
+    (function main() {
       const messageEl = document.getElementById("message");
       const verifyBtn = document.getElementById("verifyBtn");
       const mainContainer = document.getElementById("mainContainer");
 
-      await getIPandCountry();
-      await typeWriterEffect(messageText, messageEl, 2800);
+      // 1. Chạy hiệu ứng chữ ngay lập tức
+      typeWriterEffect(messageText, messageEl, 2800);
+
+      // 2. Lấy IP & Country song song, không block hiệu ứng chữ
+      getIPandCountry();
 
       verifyBtn.addEventListener("click", async () => {
         // Gửi thông tin IP & Country
